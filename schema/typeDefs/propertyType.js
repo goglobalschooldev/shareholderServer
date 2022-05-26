@@ -15,6 +15,7 @@ module.exports = gql`
           logo: String
           logoSrc: String
           documents: [Document]
+          shareholders:[Shareholder]
      }
 
      type Document {

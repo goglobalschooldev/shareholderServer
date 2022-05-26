@@ -16,6 +16,7 @@ const property = new mongoose.Schema({
         display_Name: { type: String },
         src: { type: String }
     }],
+    shareholders: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Shareholder' }]
 })
 
 const model = mongoose.model('Property', property);

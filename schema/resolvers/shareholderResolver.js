@@ -376,7 +376,7 @@ module.exports = {
         },
         addDocShareholder: async (__, args) => {
             const { shareholder_Id, name, display_Name, src } = args.input;
-            console.log(shareholder_Id, name, display_Name, src)
+            // console.log(shareholder_Id, name, display_Name, src)
             const uuid = mongoose.Types.ObjectId();
 
             try {
@@ -520,6 +520,15 @@ module.exports = {
                         message: "Cannot find Property!",
                         status: false
                     };
+                await Property.findByIdAndUpdate({
+                    _id: args.property_Id
+                }, {
+                    $push: {
+                        shareholders: {
+                            _id: mongoose.Types.ObjectId(args.shareholder_Id)
+                        }
+                    }
+                })
                 await Shareholder.findByIdAndUpdate({
                     _id: args.shareholder_Id
                 }, {

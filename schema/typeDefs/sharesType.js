@@ -29,8 +29,6 @@ module.exports = gql`
         create_At: DataTime 
         share: Share
     }
- 
-
     type shareMessage {
         status: Boolean
         message: String
@@ -50,7 +48,17 @@ module.exports = gql`
         message: String
         data: [Share]
     }
- 
+   
+    type getSharesDataMessage {
+        status: Boolean
+        message: String
+        data: DateProperty
+    }
+    type DateProperty {
+        shareholder: Float
+        capital: Float
+        share: Float
+    }
     type getSharesSoldMessage {
         status: Boolean
         message: String
@@ -82,6 +90,7 @@ module.exports = gql`
         getSharesPagination(page: Int!,limit: Int!,keyword: String!, property_Id: String!): getSharesPaginatorMessage!
         getSharesSoldByShareholder(property_Id: String!, shareholder_Id: String!): getSharesSoldMessage!
         getShareholderOwnership(property_Id: String!, shareholder_Id: String!): getOwnerShareMessage!
+        getPropertyData(property_Id: String!): getSharesDataMessage!
     }
     type Mutation {
         createSellingShare(input: CreateSellingShareInput!): shareMessage!

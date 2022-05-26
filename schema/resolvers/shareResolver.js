@@ -79,23 +79,23 @@ module.exports = {
             const { property_Id, shareholder_Id } = args;
             // console.log(property_Id, shareholder_Id)
             let getShare = [];
-
+            let getShareProperty = [];
             try {
-                const getunitPrice = await SoldOutShare.findOne({
-                    shareholder: mongoose.Types.ObjectId(shareholder_Id),
-                    property: mongoose.Types.ObjectId(property_Id),
-                    status: false
-                }).populate('shareholder').populate('property').populate('share').exec();
-                const unitPrice = getunitPrice.share.unitPrice;
+
 
                 const shareSold = await SoldOutShare.find({
                     shareholder: mongoose.Types.ObjectId(shareholder_Id),
                     property: mongoose.Types.ObjectId(property_Id),
                     status: false
                 }).populate('shareholder').populate('property').populate('share').exec();
-                const property = await Property.findById(property_Id).exec()
-                const capital = property.capital
-                const amountShare = capital * unitPrice;
+                const shareSoldInProperty = await SoldOutShare.find({
+                    property: mongoose.Types.ObjectId(property_Id),
+                    status: false
+                }).populate('shareholder').populate('property').populate('share').exec();
+
+                shareSoldInProperty.forEach(doc => {
+                    getShareProperty.push(doc.share_Value)
+                })
                 shareSold.forEach(doc => {
                     getShare.push(doc.share_Value)
                 })
@@ -104,11 +104,13 @@ module.exports = {
                     (previousValue, currentValue) => previousValue + currentValue,
                     initialValue
                 );
-
-                const ownderShip = (shareTotal / amountShare) * 100;
-                // console.log("unit price :", unitPrice)
-                // console.log(ownderShip)
-                // console.log("capital:", capital)
+                const sharePropertyTotal = getShareProperty.reduce(
+                    (previousValue, currentValue) => previousValue + currentValue,
+                    initialValue
+                );
+                // console.log(sharePropertyTotal)
+                const ownderShip = (shareTotal / sharePropertyTotal) * 100;
+                // console.log("Owner:",  Math.round((ownderShip + Number.EPSILON) * 100) / 100)
                 if (ownderShip) {
                     return {
                         message: "Get Ownership Success!",
@@ -123,6 +125,35 @@ module.exports = {
                     value: null
                 }
             }
+        },
+        getPropertyData: async (__, args) => {
+            // let PropertyData = [];
+            // let PropertyData1 = [];
+            try {
+                const getShareholder = await Property.findById(args.property_Id).exec()
+                // console.log(getShareholder.shareholders.length)
+                //                 const getShareholder = await Shareholder.find({
+                //                     property: mongoose.Types.ObjectId(args.property_Id)
+                //                 }).exec();
+                //                 getShareholder.forEach(doc => PropertyData.push(doc.properties));
+                //                 PropertyData.forEach(doc => PropertyData1.push(doc))
+                // console.log(PropertyData)
+                return {
+                    message: "Get Property Data Success!",
+                    status: true,
+                    data: {
+                        shareholder: getShareholder.shareholders.length,
+                        //                 capital: Float
+                        // share: Floa t
+                    }
+                }
+            } catch (error) {
+                return {
+                    message: error.message,
+                    status: false,
+                    data: null
+                }
+            }
         }
 
     },
@@ -132,7 +163,7 @@ module.exports = {
             let from = new Date(start_Sale_At)
             let to = new Date(end_Sale_At)
             let today = new Date();
-
+            // console.log("create share at:", from)
             try {
                 if (to < today)
                     return {
@@ -209,32 +240,25 @@ module.exports = {
             }
 
             try {
-                const getExpdate = await Share.findOne({
+
+                await Share.updateMany({
                     end_Sale_At: year + '-' + month + '-' + dt,
                     property: property_Id,
                     status: false
-                }).exec()
-                // console.log(getExpdate._id.toString())
-                if (getExpdate)
-                    await Share.findByIdAndUpdate(
-                        getExpdate._id.toString()
-                        ,
-                        {
-                            closing: true
-                        }
-                    ).exec()
-
-                // console.log(getExpdate)
-                if (getExpdate)
+                }, { $set: { closing: true } });
+                const getData = await Share.find({ end_Sale_At: year + '-' + month + '-' + dt, property: property_Id, closing: true }).exec();
+                if (getData) {
                     return {
-                        message: "Sell Anouncing Is Expired!",
+                        message: "Share expire!",
                         status: true
                     }
-                if (!getExpdate)
+                } else {
                     return {
-                        message: "Cannot find share to check Expired!",
+                        message: "No Share expire!",
                         status: false
                     }
+                }
+
             } catch (error) {
                 return {
                     message: error.message,
@@ -246,7 +270,21 @@ module.exports = {
         closingSellingShare: async (__, args) => {
 
             const { property_Id, share_id, date } = args;
-            let closeDate = new Date(date)
+            // console.log(date)
+            // let closeDate = new Date(date)
+            // let today = new Date();
+            // let year = today.getFullYear();
+            // let month = today.getMonth() + 1;
+            // let dt = today.getDate();
+            // if (dt < 10) {
+            //     dt = '0' + dt;
+            // }
+            // if (month < 10) {
+            //     month = '0' + month;
+            // }
+            // let getDate = year + '-' + month + '-' + dt;
+            // let finalDatre = new Date(getDate)
+
             let today = new Date();
             let year = today.getFullYear();
             let month = today.getMonth() + 1;
@@ -257,37 +295,38 @@ module.exports = {
             if (month < 10) {
                 month = '0' + month;
             }
-            let getDate = year + '-' + month + '-' + dt;
-            let finalDatre = new Date(getDate)
+            // console.log(year + '-' + month + '-' + dt)
             try {
                 // console.log(finalDatre, closeDate)
                 // console.log(finalDatre.toString() === closeDate.toString())
                 const findShare = await Share.findById(share_id).exec()
 
-                if (closeDate < finalDatre)
-                    return {
-                        message: "Closing Date Must Bigger then Today!",
-                        status: false
-                    }
-
-                if (finalDatre.toString() === closeDate.toString() && findShare) {
+                // if (closeDate < finalDatre)
+                //     return {
+                //         message: "Closing Date Must Bigger then Today!",
+                //         status: false
+                //     }
+                const theCloseDate = year + '-' + month + '-' + dt;
+                if (theCloseDate && findShare) {
                     await Share.findByIdAndUpdate(
                         share_id,
                         {
-                            end_Sale_At: closeDate,
+                            end_Sale_At: year + '-' + month + '-' + dt,
                             closing: true
                         }
                     ).exec();
-                } else {
-                    await Share.findByIdAndUpdate(
-                        share_id,
-                        {
-                            end_Sale_At: closeDate,
-                        }
-                    ).exec()
                 }
-
-                if (findShare)
+                // else {
+                //     await Share.findByIdAndUpdate(
+                //         share_id,
+                //         {
+                //             end_Sale_At: closeDate,
+                //         }
+                //     ).exec()
+                // }
+                const CheckClosingDate = await Share.findById(share_id).exec();
+                // console.log()
+                if (CheckClosingDate.closing)
                     return {
                         message: "Sell Anouncing Is Closing!",
                         status: true
