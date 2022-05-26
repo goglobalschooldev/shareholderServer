@@ -28,6 +28,7 @@ module.exports = gql`
         property: Property
         create_At: DataTime 
         share: Share
+        status: Boolean
     }
     type shareMessage {
         status: Boolean

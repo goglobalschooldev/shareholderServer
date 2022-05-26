@@ -131,13 +131,7 @@ module.exports = {
             // let PropertyData1 = [];
             try {
                 const getShareholder = await Property.findById(args.property_Id).exec()
-                // console.log(getShareholder.shareholders.length)
-                //                 const getShareholder = await Shareholder.find({
-                //                     property: mongoose.Types.ObjectId(args.property_Id)
-                //                 }).exec();
-                //                 getShareholder.forEach(doc => PropertyData.push(doc.properties));
-                //                 PropertyData.forEach(doc => PropertyData1.push(doc))
-                // console.log(PropertyData)
+
                 return {
                     message: "Get Property Data Success!",
                     status: true,
