@@ -58,15 +58,15 @@ module.exports = {
         getPropertyData: async (__, args) => {
             let capitalArray = [];
             let shareArray = [];
+            console.log(args.property_Id)
             try {
                 const findShareholder = await Shareholder.find({
                     properties: args.property_Id
-
                 }).exec();
                 const getCapital = await SoldOutShare.find({
-                    properties: args.property_Id
+                    property: args.property_Id
                 }).exec();
-
+                // console.log(getCapital)
                 const initialValue = 0;
                 getCapital.forEach(cap => capitalArray.push(cap.price));
                 const countCapital = capitalArray.reduce(

@@ -12,7 +12,8 @@ module.exports = {
             try {
                 const share = await Share.findById(args._id).populate('property').exec();
                 const shareSold = await SoldOutShare.find({
-                    share: args._id
+                    share: args._id,
+                    status: false
                 }).exec();
                 shareSold.forEach(share => totalShareSold.push(share.share_Value)
                 )
