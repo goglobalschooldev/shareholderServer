@@ -50,16 +50,6 @@ module.exports = gql`
         data: [Share]
     }
    
-    type getSharesDataMessage {
-        status: Boolean
-        message: String
-        data: DateProperty
-    }
-    type DateProperty {
-        shareholder: Float
-        capital: Float
-        share: Float
-    }
     type getSharesSoldMessage {
         status: Boolean
         message: String
@@ -67,8 +57,28 @@ module.exports = gql`
     }
     type getSharesPaginatorMessage {
         shares:[Share]
-        paginator:Paginator
+        paginator: Paginator
         message: String
+    }
+    type getShareDetailMessage {
+        status: Boolean
+        message: String
+        data: ShareDetail
+    }
+    type ShareDetail {
+        _id: ID
+        create_At: DataTime  
+        update_At: DataTime 
+        type: String
+        total: Int
+        unitPrice: Float
+        sale_Anountment: Int
+        start_Sale_At: DataTime  
+        end_Sale_At: DataTime  
+        property: String
+        remainShare: Float
+        status: Boolean
+        closing: Boolean
     }
     #Input 
     input CreateSellingShareInput {
@@ -86,12 +96,12 @@ module.exports = gql`
         share_Value: Int!      
     }
     type Query {
-        getShareById(_id: String!): getShareMessage!
+        getShareById(_id: String!): getShareDetailMessage!
         getSharesProperty(property_Id: String!): getSharesMessage!
         getSharesPagination(page: Int!,limit: Int!,keyword: String!, property_Id: String!): getSharesPaginatorMessage!
         getSharesSoldByShareholder(property_Id: String!, shareholder_Id: String!): getSharesSoldMessage!
         getShareholderOwnership(property_Id: String!, shareholder_Id: String!): getOwnerShareMessage!
-        getPropertyData(property_Id: String!): getSharesDataMessage!
+        getShareByPropterty(property_Id: String!): getShareMessage!
     }
     type Mutation {
         createSellingShare(input: CreateSellingShareInput!): shareMessage!

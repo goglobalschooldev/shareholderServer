@@ -12,6 +12,7 @@ const shareholder = new mongoose.Schema({
     status: { type: Boolean, default: false },
     position: { type: String },
     place_of_Birth: { type: String },
+    date_of_Birth: Date,
     national_Id: { type: String },
     image_src: { type: String },
     image_name: { type: String },

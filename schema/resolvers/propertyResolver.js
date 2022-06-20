@@ -2,7 +2,9 @@ const Property = require('../models/Property');
 const { authCheck } = require("../../helpers/auth");
 const mongoose = require('mongoose');
 const User = require('../models/User');
-
+const SoldOutShare = require("../models/SoldOutShare");
+const Shareholder = require("../models/Shareholder");
+const Share = require("../models/Share");
 module.exports = {
     Query: {
         getProperties: async (__, { keyword }, { req }) => {
@@ -52,6 +54,47 @@ module.exports = {
                     data: null
                 }
             }
+        },
+        getPropertyData: async (__, args) => {
+            let capitalArray = [];
+            let shareArray = [];
+            try {
+                const findShareholder = await Shareholder.find({
+                    properties: args.property_Id
+
+                }).exec();
+                const getCapital = await SoldOutShare.find({
+                    properties: args.property_Id
+                }).exec();
+
+                const initialValue = 0;
+                getCapital.forEach(cap => capitalArray.push(cap.price));
+                const countCapital = capitalArray.reduce(
+                    (previousValue, currentValue) => previousValue + currentValue,
+                    initialValue
+                );
+                getCapital.forEach(cap => shareArray.push(cap.share_Value));
+                const countShare = shareArray.reduce(
+                    (previousValue, currentValue) => previousValue + currentValue,
+                    initialValue
+                );
+
+                return {
+                    message: "Get Property Data Successs!",
+                    status: true,
+                    data: {
+                        total_Shareholder: findShareholder.length,
+                        capital: countCapital,
+                        shareTotal: countShare
+                    }
+                }
+            } catch (error) {
+                return {
+                    message: error.message,
+                    status: flase,
+                    data: null
+                }
+            }
         }
     },
     Mutation: {
@@ -87,6 +130,7 @@ module.exports = {
                     };
 
                 const findPropertyInuser = await User.find({ properties: args.propertyId });
+                const findPropertyInShareholder = await Shareholder.find({ properties: args.propertyId });
 
                 await findPropertyInuser.forEach(async e =>
 
@@ -98,13 +142,34 @@ module.exports = {
                         }
                     })
                 )
+                await findPropertyInShareholder.forEach(async e =>
 
-                await Property.findByIdAndDelete(mongoose.Types.ObjectId(args.propertyId))
+                    await Shareholder.updateOne({
+                        _id: e._id.toString()
+                    }, {
+                        $pull: {
+                            properties: args.propertyId
+                        }
+                    })
+                )
+                const deleteProperty = await Property.findByIdAndDelete(mongoose.Types.ObjectId(args.propertyId))
                     .exec();
-                return {
-                    message: "Property Deleted!",
-                    status: true
+
+                if (deleteProperty) {
+                    await SoldOutShare.deleteMany({
+                        property: args.propertyId
+                    })
+                    return {
+                        message: "Property Deleted!",
+                        status: true
+                    }
                 }
+
+                if (!deleteProperty)
+                    return {
+                        message: "Cannot delete Property!",
+                        status: false
+                    }
             } catch (error) {
                 return {
                     message: error.message,

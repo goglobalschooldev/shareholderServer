@@ -33,10 +33,20 @@ module.exports = gql`
          message: String
          data: Property
      }
+     type propertyData {
+          total_Shareholder: Float
+          capital: Float
+          shareTotal: Float
+     }
      type getPropertiesMessage {
          status:  Boolean
          message: String
          data: [Property]
+     }
+     type getPropertyDataMessage {
+         status:  Boolean
+         message: String
+         data: propertyData          
      }
      # Input Type
      input propertyInput{
@@ -70,6 +80,7 @@ module.exports = gql`
           getProperties(keyword: String!): [Property!]
           getProperty(_id: String!): getPropertyMessage!
           getTopCapitalProperties: getPropertiesMessage!
+          getPropertyData(property_Id: String!): getPropertyDataMessage!
      }
      type Mutation {
           createProperty(input: propertyInput!): getPropertyMessage!

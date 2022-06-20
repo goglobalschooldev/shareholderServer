@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Shareholder = require('../models/Shareholder');
+const SoldOutShare = require("../models/SoldOutShare");
 const { authCheck } = require("../../helpers/auth");
 const mongoose = require('mongoose');
 const Property = require('../models/Property');
@@ -35,7 +36,6 @@ module.exports = {
             }
         },
         getShareholderbyProperty: async (__, args) => {
-            // console.log(args.property_Id)
             try {
                 const shareholders = await Shareholder.find({
                     properties: mongoose.Types.ObjectId(args.property_Id)
@@ -161,7 +161,7 @@ module.exports = {
         },
         createShareholderByAdmin: async (__, args) => {
             const uuid = mongoose.Types.ObjectId();
-            const { admin_Id, first_Name, last_Name, gender, place_of_Birth, national_Id, image_src, image_name, contact, finger_Print } = args.input
+            const { admin_Id, first_Name, last_Name, gender, place_of_Birth, date_of_Birth, national_Id, image_src, image_name, contact, finger_Print } = args.input
             try {
                 // Finding admin 
                 const Admin = await User.findById(admin_Id).exec();
@@ -193,6 +193,7 @@ module.exports = {
                     last_Name,
                     gender,
                     place_of_Birth,
+                    date_of_Birth,
                     national_Id,
                     image_src,
                     image_name,
@@ -233,7 +234,7 @@ module.exports = {
             }
         },
         updateShareholder: async (__, args) => {
-            const { _id, first_Name, last_Name, gender, place_of_Birth, national_Id, image_src, image_name, contact } = args.input;
+            const { _id, first_Name, last_Name, gender, place_of_Birth, national_Id, image_src, image_name, contact, date_of_Birth, } = args.input;
             try {
                 if (!last_Name || !first_Name)
                     return {
@@ -253,6 +254,7 @@ module.exports = {
                         national_Id,
                         image_src,
                         image_name,
+                        date_of_Birth,
                         update_At: new Date().toISOString(),
                         contact: {
                             phone_Number: contact.phone_Number,
@@ -355,11 +357,15 @@ module.exports = {
                     await auth.deleteUser(args.shareholderId).catch(error => console.log('Error deleting user:', error));
 
                 const deleteShareholder = await Shareholder.findByIdAndDelete(args.shareholderId).exec();
-                if (deleteShareholder)
+                if (deleteShareholder) {
+                    await SoldOutShare.deleteMany({
+                        shareholder: args.shareholderId
+                    })
                     return {
                         message: "Shareholder deleted!",
                         status: true
                     };
+                }
 
                 if (!deleteShareholder)
                     return {
@@ -601,6 +607,40 @@ module.exports = {
                         message: "Add signatur success!",
                         status: true
                     }
+            } catch (error) {
+                return {
+                    message: error.message,
+                    status: false
+                }
+            }
+        },
+        removeShareHolderProperty: async (__, args) => {
+            try {
+                await Shareholder.findByIdAndUpdate(
+                    args.shareholder_Id, {
+                    $pull: {
+                        properties: args.property_Id
+                    }
+                }).exec();
+                const findShareholderbyProperty = await Shareholder.findOne(
+                    {
+                        _id: args.shareholder_Id,
+                        properties: args.property_Id
+                    }
+
+                ).exec()
+
+                if (!findShareholderbyProperty) {
+                    return {
+                        message: "Success!",
+                        status: true
+                    }
+                } else {
+                    return {
+                        message: "Cannot Remove!",
+                        status: false
+                    }
+                }
             } catch (error) {
                 return {
                     message: error.message,

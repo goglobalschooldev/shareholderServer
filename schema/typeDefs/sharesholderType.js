@@ -9,6 +9,7 @@ module.exports = gql`
         gender: String
         position: String
         place_of_Birth: String
+        date_of_Birth: DataTime
         national_Id: String
         image_src: String
         image_name: String
@@ -62,9 +63,10 @@ module.exports = gql`
         location: String
     }
     input shareholderInput{
-        first_Name: String
-        last_Name: String
-        gender: String
+        first_Name: String!
+        last_Name: String!
+        gender: String!
+        date_of_Birth: String!
         place_of_Birth: String
         national_Id: String
         image_src: String
@@ -85,6 +87,7 @@ module.exports = gql`
         contact: contactInput
         finger_Print: FingerprintInput
         signatur: SignaturInput
+        date_of_Birth: String
     }
     input addDocShareholderInput{
           shareholder_Id: String         
@@ -105,6 +108,7 @@ module.exports = gql`
         first_Name: String!
         last_Name: String!
         gender: String!
+        date_of_Birth: String!
         place_of_Birth: String!
         national_Id: String!
         image_src: String!
@@ -121,12 +125,13 @@ module.exports = gql`
         createShareholderByAdmin(input: shareholderInputByAdimin!): shareholderMessage!
         changeMail(mail: String! password: String!, _id: String!): shareholderMessage!
         updateShareholder(input: shareholderInputUpdate!): getShareholderMessage!
-        deleteShareholder(shareholderId: String!): shareholderMessage!
+        deleteShareholder(shareholderId: String!, propertyId: String!): shareholderMessage!
         addDocShareholder(input: addDocShareholderInput!): shareholderMessage!
         removeDocShareholder(shareholder_Id: String!, doc_Id: String!): shareholderMessage!
         renameDocShareholder(shareholder_Id: String!, doc_Name: String!, doc_Id: String): shareholderMessage!
         addShareholderProperty(shareholder_Id: String!, property_Id: String!): shareholderMessage!
         addFingerPrintShareholder(shareholder_Id: String!,name: String!, src: String!): shareholderMessage!
         addSignaturShareholder(shareholder_Id: String!,name: String!, src: String!): shareholderMessage!
+        removeShareHolderProperty(shareholder_Id: String!, property_Id: String!): shareholderMessage!
     }
 `

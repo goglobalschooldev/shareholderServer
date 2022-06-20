@@ -67,7 +67,6 @@ module.exports = {
         },
 
         getUsersPagination: async (__, args) => {
-            // console.log(args)
             const options = {
                 page: args.page || 1,
                 limit: args.limit || 10,

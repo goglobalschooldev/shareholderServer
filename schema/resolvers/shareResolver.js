@@ -8,14 +8,40 @@ const { GetFirstInvoice_ID, Get_Start_ID } = require('../../util/ShareCaculattor
 module.exports = {
     Query: {
         getShareById: async (__, args) => {
+            let totalShareSold = [];
             try {
                 const share = await Share.findById(args._id).populate('property').exec();
-
+                const shareSold = await SoldOutShare.find({
+                    share: args._id
+                }).exec();
+                shareSold.forEach(share => totalShareSold.push(share.share_Value)
+                )
+                // console.log(totalShareSold)
+                const initialValue = 0;
+                const shareTotal = totalShareSold.reduce(
+                    (previousValue, currentValue) => previousValue + currentValue,
+                    initialValue
+                );
+                // console.log(shareTotal)
                 if (share)
                     return {
                         message: "Get Share Succes!",
                         status: true,
-                        data: share
+                        data: {
+                            _id: share._id,
+                            create_At: share.create_At,
+                            update_At: share.update_At,
+                            type: share.type,
+                            total: share.total,
+                            unitPrice: share.unitPrice,
+                            sale_Anountment: share.sale_Anountment,
+                            start_Sale_At: share.start_Sale_At,
+                            end_Sale_At: share.end_Sale_At,
+                            closing: share.closing,
+                            status: share.status,
+                            property: share.property.name,
+                            remainShare: share.total - shareTotal
+                        }
                     }
             } catch (error) {
                 return {
@@ -81,8 +107,6 @@ module.exports = {
             let getShare = [];
             let getShareProperty = [];
             try {
-
-
                 const shareSold = await SoldOutShare.find({
                     shareholder: mongoose.Types.ObjectId(shareholder_Id),
                     property: mongoose.Types.ObjectId(property_Id),
@@ -126,20 +150,21 @@ module.exports = {
                 }
             }
         },
-        getPropertyData: async (__, args) => {
-            // let PropertyData = [];
-            // let PropertyData1 = [];
+        getShareByPropterty: async (__, args) => {
             try {
-                const getShareholder = await Property.findById(args.property_Id).exec()
-
-                return {
-                    message: "Get Property Data Success!",
-                    status: true,
-                    data: {
-                        shareholder: getShareholder.shareholders.length,
-                        //                 capital: Float
-                        // share: Floa t
+                const findShare = await Share.findOne(
+                    {
+                        property: args.property_Id,
+                        status: false,
+                        closing: false
                     }
+                ).populate('sold_Out_Share').exec();
+
+                // console.log(findShare)
+                return {
+                    message: "K",
+                    status: true,
+                    data: findShare
                 }
             } catch (error) {
                 return {
@@ -148,7 +173,8 @@ module.exports = {
                     data: null
                 }
             }
-        }
+        },
+
 
     },
     Mutation: {
@@ -157,7 +183,6 @@ module.exports = {
             let from = new Date(start_Sale_At)
             let to = new Date(end_Sale_At)
             let today = new Date();
-            // console.log("create share at:", from)
             try {
                 if (to < today)
                     return {
@@ -342,6 +367,7 @@ module.exports = {
                     }
                 ).exec();
                 if (share) {
+                    await SoldOutShare.deleteMany({ share: args.share_Id })
                     return {
                         message: "Voiding Success!",
                         status: true
@@ -418,6 +444,16 @@ module.exports = {
                     share: checkSelling._id,
                     status: false
                 }).save();
+
+                // adding shareholder to property
+                await Shareholder.findByIdAndUpdate(
+                    shareholder_Id,
+                    {
+                        $push: {
+                            properties: property_Id
+                        }
+                    }
+                )
                 if (shareSelling)
                     return {
                         message: 'Buy share success!',
