@@ -58,7 +58,7 @@ module.exports = {
         getPropertyData: async (__, args) => {
             let capitalArray = [];
             let shareArray = [];
-            console.log(args.property_Id)
+            // console.log(args.property_Id)
             try {
                 const findShareholder = await Shareholder.find({
                     properties: args.property_Id
@@ -78,7 +78,7 @@ module.exports = {
                     (previousValue, currentValue) => previousValue + currentValue,
                     initialValue
                 );
-
+                // console.log(countCapital)
                 return {
                     message: "Get Property Data Successs!",
                     status: true,

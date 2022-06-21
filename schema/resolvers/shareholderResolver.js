@@ -63,12 +63,19 @@ module.exports = {
                 sort: {
                     createdAt: -1,
                 },
-                populate: "",
+                // populate: "",
             }
+
+            let propertiesQuery = {}
+            if(args.property_Id!==""){
+                propertiesQuery={ properties: { $elemMatch: { $eq: mongoose.Types.ObjectId(args.property_Id) } } }
+            }
+
             const query = {
-                $or: [
+                $and: [
                     { first_Name: { $regex: args.keyword, $options: "i" } },
                     { last_Name: { $regex: args.keyword, $options: "i" } },
+                    propertiesQuery
                 ],
             }
             const shareholders = await Shareholder.paginate(query, options);

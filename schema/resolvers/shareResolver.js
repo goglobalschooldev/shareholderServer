@@ -447,14 +447,14 @@ module.exports = {
                 }).save();
 
                 // adding shareholder to property
-                await Shareholder.findByIdAndUpdate(
-                    shareholder_Id,
-                    {
-                        $push: {
-                            properties: property_Id
-                        }
-                    }
-                )
+                // await Shareholder.findByIdAndUpdate(
+                //     shareholder_Id,
+                //     {
+                //         $push: {
+                //             properties: property_Id
+                //         }
+                //     }
+                // )
                 if (shareSelling)
                     return {
                         message: 'Buy share success!',

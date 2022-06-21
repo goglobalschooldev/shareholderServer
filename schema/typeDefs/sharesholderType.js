@@ -118,7 +118,7 @@ module.exports = gql`
     type Query {
          getSherholder(shareholder_Id: String!): getShareholderMessage!
          getShareholderbyProperty(property_Id: String!): getShareholdersMessage!
-         getShareholderWithPagination(page: Int!,limit: Int!,keyword: String!): getShareholdersPaginator!
+         getShareholderWithPagination(page: Int!,limit: Int!, keyword: String!, property_Id: String!): getShareholdersPaginator!
     }
     type Mutation {
         createShareholder(input: shareholderInput!): getShareholderMessage!
