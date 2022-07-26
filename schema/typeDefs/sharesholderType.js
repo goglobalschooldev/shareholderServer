@@ -55,6 +55,16 @@ module.exports = gql`
         message: String
         status: Boolean
     }
+    type certificateMessage {
+        message: String
+        status: Boolean
+        data: Certificate
+    }
+    type Certificate {
+        shaerholder_Name: String
+        share_Value: Float
+        
+    }
 # Input 
     input contactInput {
         mail: String
@@ -118,6 +128,7 @@ module.exports = gql`
     type Query {
          getSherholder(shareholder_Id: String!): getShareholderMessage!
          getShareholderbyProperty(property_Id: String!): getShareholdersMessage!
+         getShareHolderCertificat(shareholder_Id: String!, property_Id: String!): certificateMessage!
          getShareholderWithPagination(page: Int!,limit: Int!, keyword: String!, property_Id: String!): getShareholdersPaginator!
     }
     type Mutation {

@@ -20,10 +20,10 @@ module.exports = gql`
     type Sold_Out_Share{
         _id: ID
         invoice_Id: String
-        share_Value: Int
-        price: Int
-        start_Id: Int
-        end_Id: Int
+        share_Value: Float
+        price: Float
+        start_Id: Float
+        end_Id: Float
         shareholder: Shareholder
         property: Property
         create_At: DataTime 
@@ -93,7 +93,7 @@ module.exports = gql`
     input buyingShareInput {
         property_Id: String!
         shareholder_Id: String!
-        share_Value: Int!      
+        share_Value: Float!      
     }
     type Query {
         getShareById(_id: String!): getShareDetailMessage!
